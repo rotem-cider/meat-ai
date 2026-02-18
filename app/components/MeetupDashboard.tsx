@@ -6,6 +6,8 @@ import HostSelector from "./HostSelector";
 import OtherItems from "./OtherItems";
 import ParticipantList from "./ParticipantList";
 import RegisterForm from "./RegisterForm";
+import ShareButton from "./ShareButton";
+import Link from "next/link";
 
 interface Meetup {
   id: number;
@@ -36,10 +38,9 @@ interface Stats {
 
 interface MeetupDashboardProps {
   meetupId: number;
-  onBack: () => void;
 }
 
-export default function MeetupDashboard({ meetupId, onBack }: MeetupDashboardProps) {
+export default function MeetupDashboard({ meetupId }: MeetupDashboardProps) {
   const [meetup, setMeetup] = useState<Meetup | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -91,7 +92,6 @@ export default function MeetupDashboard({ meetupId, onBack }: MeetupDashboardPro
     minute: "2-digit",
   });
 
-  // Meat breakdown by type
   const meatByType: Record<string, number> = {};
   participants.forEach((p) => {
     if (p.meat_lbs > 0 && p.meat_type) {
@@ -102,12 +102,19 @@ export default function MeetupDashboard({ meetupId, onBack }: MeetupDashboardPro
 
   return (
     <div>
-      <button
-        onClick={onBack}
-        className="mb-6 flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
-      >
-        <span>←</span> All meetups
-      </button>
+      <div className="mb-6 flex items-center justify-between">
+        <Link
+          href="/"
+          className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+        >
+          <span>←</span> All meetups
+        </Link>
+        <ShareButton
+          meetupId={meetupId}
+          title={meetup.title}
+          date={formattedDate}
+        />
+      </div>
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-zinc-900 sm:text-4xl">{meetup.title}</h1>

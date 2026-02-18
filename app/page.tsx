@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import CreateMeetup from "./components/CreateMeetup";
-import MeetupDashboard from "./components/MeetupDashboard";
 
 interface Meetup {
   id: number;
@@ -15,22 +15,19 @@ interface Meetup {
 
 export default function Home() {
   const [meetups, setMeetups] = useState<Meetup[]>([]);
-  const [selectedMeetupId, setSelectedMeetupId] = useState<number | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const fetchMeetups = useCallback(async () => {
     try {
       const res = await fetch("/api/meetups");
       const data = await res.json();
       setMeetups(data);
-      if (data.length === 1 && !selectedMeetupId) {
-        setSelectedMeetupId(data[0].id);
-      }
     } finally {
       setLoading(false);
     }
-  }, [selectedMeetupId]);
+  }, []);
 
   useEffect(() => {
     fetchMeetups();
@@ -40,20 +37,6 @@ export default function Home() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-orange-200 border-t-orange-500" />
-      </div>
-    );
-  }
-
-  if (selectedMeetupId) {
-    return (
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <MeetupDashboard
-          meetupId={selectedMeetupId}
-          onBack={() => {
-            setSelectedMeetupId(null);
-            fetchMeetups();
-          }}
-        />
       </div>
     );
   }
@@ -75,10 +58,14 @@ export default function Home() {
           {meetups.map((m) => {
             const d = new Date(m.proposed_date);
             return (
-              <button
+              <a
                 key={m.id}
-                onClick={() => setSelectedMeetupId(m.id)}
-                className="w-full rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition-all hover:border-orange-300 hover:shadow-md"
+                href={`/meetup/${m.id}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push(`/meetup/${m.id}`);
+                }}
+                className="block w-full rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition-all hover:border-orange-300 hover:shadow-md"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -97,9 +84,9 @@ export default function Home() {
                       {m.location && ` · ${m.location}`}
                     </p>
                   </div>
-                  <span className="text-2xl">→</span>
+                  <span className="text-2xl text-zinc-300">→</span>
                 </div>
-              </button>
+              </a>
             );
           })}
         </div>
@@ -109,7 +96,7 @@ export default function Home() {
         <CreateMeetup
           onCreated={(newId) => {
             setShowCreate(false);
-            setSelectedMeetupId(newId);
+            router.push(`/meetup/${newId}`);
           }}
         />
       ) : (
