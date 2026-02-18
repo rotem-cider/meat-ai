@@ -56,7 +56,7 @@ export default function ParticipantList({ participants, onRemove, onEdit }: Part
                 {p.other_items && <span>📦 {p.other_items}</span>}
               </div>
             </div>
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => onEdit(p)}
                 className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
