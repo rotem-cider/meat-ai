@@ -1,7 +1,29 @@
 import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
 
-const DB_PATH = path.join(process.cwd(), "meetup.db");
+function getDbPath(): string {
+  const candidates = [
+    process.env.DB_PATH,
+    path.join(process.cwd(), "data"),
+    "/tmp",
+  ];
+
+  for (const dir of candidates) {
+    if (!dir) continue;
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.accessSync(dir, fs.constants.W_OK);
+      return path.join(dir, "meetup.db");
+    } catch {
+      continue;
+    }
+  }
+
+  return path.join("/tmp", "meetup.db");
+}
+
+const DB_PATH = getDbPath();
 
 let db: Database.Database | null = null;
 
