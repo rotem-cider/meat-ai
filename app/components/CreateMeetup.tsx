@@ -3,12 +3,19 @@
 import { useState, FormEvent } from "react";
 
 interface CreateMeetupProps {
-  onCreated: () => void;
+  onCreated: (meetupId: number) => void;
 }
 
 export default function CreateMeetup({ onCreated }: CreateMeetupProps) {
   const [title, setTitle] = useState("Meat & AI Meetup");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(() => {
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}T20:00`;
+  });
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -19,7 +26,7 @@ export default function CreateMeetup({ onCreated }: CreateMeetupProps) {
 
     setSubmitting(true);
     try {
-      await fetch("/api/meetups", {
+      const res = await fetch("/api/meetups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -29,7 +36,8 @@ export default function CreateMeetup({ onCreated }: CreateMeetupProps) {
           description: description.trim(),
         }),
       });
-      onCreated();
+      const created = await res.json();
+      onCreated(created.id);
     } finally {
       setSubmitting(false);
     }

@@ -107,9 +107,9 @@ export default function Home() {
 
       {showCreate ? (
         <CreateMeetup
-          onCreated={() => {
+          onCreated={(newId) => {
             setShowCreate(false);
-            fetchMeetups();
+            setSelectedMeetupId(newId);
           }}
         />
       ) : (
