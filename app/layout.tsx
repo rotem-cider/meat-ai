@@ -13,8 +13,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://meat-ai.vercel.app"),
   title: "Meat & AI — Meetup Organizer",
   description: "Organize your Meat & AI meetups. RSVP, bring meat, talk AI.",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  openGraph: {
+    title: "Meat & AI — Meetup Organizer",
+    description: "Where good code meets great cuts. Propose a meetup, bring some meat, talk some AI.",
+    type: "website",
+    images: ["/api/og"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Meat & AI — Meetup Organizer",
+    description: "Where good code meets great cuts. Propose a meetup, bring some meat, talk some AI.",
+    images: ["/api/og"],
+  },
 };
 
 export default function RootLayout({

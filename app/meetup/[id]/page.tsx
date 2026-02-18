@@ -31,6 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? `${meetup.description} · ${formattedDate}`
       : `Join us on ${formattedDate}. RSVP, bring some meat, talk some AI.`;
 
+    const ogImage = `/api/og?title=${encodeURIComponent(meetup.title)}&date=${encodeURIComponent(formattedDate)}`;
+
     return {
       title,
       description,
@@ -38,11 +40,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: meetup.title,
         description,
         type: "website",
+        images: [ogImage],
       },
       twitter: {
         card: "summary_large_image",
         title: meetup.title,
         description,
+        images: [ogImage],
       },
     };
   } catch {
