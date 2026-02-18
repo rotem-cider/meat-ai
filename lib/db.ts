@@ -1,44 +1,20 @@
-import Database from "better-sqlite3";
-import path from "path";
-import fs from "fs";
+import { createClient, type Client } from "@libsql/client";
 
-function getDbPath(): string {
-  const candidates = [
-    process.env.DB_PATH,
-    path.join(process.cwd(), "data"),
-    "/tmp",
-  ];
+let client: Client | null = null;
 
-  for (const dir of candidates) {
-    if (!dir) continue;
-    try {
-      fs.mkdirSync(dir, { recursive: true });
-      fs.accessSync(dir, fs.constants.W_OK);
-      return path.join(dir, "meetup.db");
-    } catch {
-      continue;
-    }
+export function getDb(): Client {
+  if (!client) {
+    client = createClient({
+      url: process.env.TURSO_DATABASE_URL || "file:./data/meetup.db",
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+    initSchema(client);
   }
-
-  return path.join("/tmp", "meetup.db");
+  return client;
 }
 
-const DB_PATH = getDbPath();
-
-let db: Database.Database | null = null;
-
-export function getDb(): Database.Database {
-  if (!db) {
-    db = new Database(DB_PATH);
-    db.pragma("journal_mode = WAL");
-    db.pragma("foreign_keys = ON");
-    initSchema(db);
-  }
-  return db;
-}
-
-function initSchema(db: Database.Database) {
-  db.exec(`
+async function initSchema(db: Client) {
+  await db.executeMultiple(`
     CREATE TABLE IF NOT EXISTS meetups (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,

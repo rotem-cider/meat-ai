@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import MeatMeter from "./MeatMeter";
 import HostSelector from "./HostSelector";
 import OtherItems from "./OtherItems";
@@ -45,6 +45,8 @@ export default function MeetupDashboard({ meetupId }: MeetupDashboardProps) {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<Participant | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -65,6 +67,17 @@ export default function MeetupDashboard({ meetupId }: MeetupDashboardProps) {
 
   const handleRemove = async (participantId: number) => {
     await fetch(`/api/meetups/${meetupId}/register/${participantId}`, { method: "DELETE" });
+    if (editing?.id === participantId) setEditing(null);
+    fetchData();
+  };
+
+  const handleEdit = (participant: Participant) => {
+    setEditing(participant);
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleRegistered = () => {
+    setEditing(null);
     fetchData();
   };
 
@@ -94,9 +107,9 @@ export default function MeetupDashboard({ meetupId }: MeetupDashboardProps) {
 
   const meatByType: Record<string, number> = {};
   participants.forEach((p) => {
-    if (p.meat_lbs > 0 && p.meat_type) {
-      const key = p.meat_type.toLowerCase();
-      meatByType[key] = (meatByType[key] || 0) + p.meat_lbs;
+    if (Number(p.meat_lbs) > 0 && p.meat_type) {
+      const key = String(p.meat_type).toLowerCase();
+      meatByType[key] = (meatByType[key] || 0) + Number(p.meat_lbs);
     }
   });
 
@@ -165,8 +178,15 @@ export default function MeetupDashboard({ meetupId }: MeetupDashboardProps) {
         </div>
 
         <div className="space-y-6">
-          <RegisterForm meetupId={meetupId} onRegistered={fetchData} />
-          <ParticipantList participants={participants} onRemove={handleRemove} />
+          <div ref={formRef}>
+            <RegisterForm
+              meetupId={meetupId}
+              onRegistered={handleRegistered}
+              editing={editing}
+              onCancelEdit={() => setEditing(null)}
+            />
+          </div>
+          <ParticipantList participants={participants} onRemove={handleRemove} onEdit={handleEdit} />
         </div>
       </div>
     </div>

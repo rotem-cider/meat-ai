@@ -12,25 +12,30 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const db = getDb();
 
-  const existing = db
-    .prepare("SELECT * FROM participants WHERE meetup_id = ? AND email = ?")
-    .get(id, email) as Participant | undefined;
+  const existingResult = await db.execute({
+    sql: "SELECT * FROM participants WHERE meetup_id = ? AND email = ?",
+    args: [id, email],
+  });
+  const existing = existingResult.rows[0] as unknown as Participant | undefined;
 
   if (existing) {
-    db.prepare(
-      "UPDATE participants SET name=?, can_host=?, meat_lbs=?, meat_type=?, other_items=? WHERE id=?"
-    ).run(name, can_host ? 1 : 0, meat_lbs || 0, meat_type || "", other_items || "", existing.id);
+    await db.execute({
+      sql: "UPDATE participants SET name=?, can_host=?, meat_lbs=?, meat_type=?, other_items=? WHERE id=?",
+      args: [name, can_host ? 1 : 0, meat_lbs || 0, meat_type || "", other_items || "", existing.id],
+    });
 
-    const updated = db.prepare("SELECT * FROM participants WHERE id = ?").get(existing.id) as Participant;
-    return NextResponse.json(updated);
+    const updated = await db.execute({ sql: "SELECT * FROM participants WHERE id = ?", args: [existing.id] });
+    return NextResponse.json(updated.rows[0] as unknown as Participant);
   }
 
-  const result = db
-    .prepare(
-      "INSERT INTO participants (meetup_id, name, email, can_host, meat_lbs, meat_type, other_items) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    )
-    .run(id, name, email, can_host ? 1 : 0, meat_lbs || 0, meat_type || "", other_items || "");
+  const result = await db.execute({
+    sql: "INSERT INTO participants (meetup_id, name, email, can_host, meat_lbs, meat_type, other_items) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    args: [id, name, email, can_host ? 1 : 0, meat_lbs || 0, meat_type || "", other_items || ""],
+  });
 
-  const participant = db.prepare("SELECT * FROM participants WHERE id = ?").get(result.lastInsertRowid) as Participant;
-  return NextResponse.json(participant, { status: 201 });
+  const participant = await db.execute({
+    sql: "SELECT * FROM participants WHERE id = ?",
+    args: [result.lastInsertRowid!],
+  });
+  return NextResponse.json(participant.rows[0] as unknown as Participant, { status: 201 });
 }

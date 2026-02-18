@@ -7,6 +7,6 @@ export async function DELETE(
 ) {
   const { participantId } = await params;
   const db = getDb();
-  db.prepare("DELETE FROM participants WHERE id = ?").run(participantId);
+  await db.execute({ sql: "DELETE FROM participants WHERE id = ?", args: [participantId] });
   return NextResponse.json({ ok: true });
 }

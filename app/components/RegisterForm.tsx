@@ -1,13 +1,25 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
+
+interface EditingParticipant {
+  id: number;
+  name: string;
+  email: string;
+  can_host: number;
+  meat_lbs: number;
+  meat_type: string;
+  other_items: string;
+}
 
 interface RegisterFormProps {
   meetupId: number;
   onRegistered: () => void;
+  editing?: EditingParticipant | null;
+  onCancelEdit?: () => void;
 }
 
-export default function RegisterForm({ meetupId, onRegistered }: RegisterFormProps) {
+export default function RegisterForm({ meetupId, onRegistered, editing, onCancelEdit }: RegisterFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [canHost, setCanHost] = useState(false);
@@ -16,6 +28,27 @@ export default function RegisterForm({ meetupId, onRegistered }: RegisterFormPro
   const [otherItems, setOtherItems] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (editing) {
+      setName(editing.name);
+      setEmail(editing.email);
+      setCanHost(editing.can_host === 1);
+      setMeatLbs(editing.meat_lbs > 0 ? String(editing.meat_lbs) : "");
+      setMeatType(editing.meat_type || "");
+      setOtherItems(editing.other_items || "");
+    }
+  }, [editing]);
+
+  const resetForm = () => {
+    setName("");
+    setEmail("");
+    setCanHost(false);
+    setMeatLbs("");
+    setMeatType("");
+    setOtherItems("");
+    setError("");
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -46,12 +79,7 @@ export default function RegisterForm({ meetupId, onRegistered }: RegisterFormPro
         throw new Error(data.error || "Registration failed");
       }
 
-      setName("");
-      setEmail("");
-      setCanHost(false);
-      setMeatLbs("");
-      setMeatType("");
-      setOtherItems("");
+      resetForm();
       onRegistered();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -60,9 +88,29 @@ export default function RegisterForm({ meetupId, onRegistered }: RegisterFormPro
     }
   };
 
+  const handleCancel = () => {
+    resetForm();
+    onCancelEdit?.();
+  };
+
+  const isEditing = !!editing;
+
   return (
     <form onSubmit={handleSubmit} className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <h3 className="mb-4 text-lg font-semibold text-zinc-900">Sign Up</h3>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-zinc-900">
+          {isEditing ? "Update Registration" : "Sign Up"}
+        </h3>
+        {isEditing && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
 
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
@@ -92,6 +140,7 @@ export default function RegisterForm({ meetupId, onRegistered }: RegisterFormPro
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
               placeholder="john@example.com"
               required
+              disabled={isEditing}
             />
           </div>
         </div>
@@ -154,7 +203,9 @@ export default function RegisterForm({ meetupId, onRegistered }: RegisterFormPro
         disabled={submitting}
         className="mt-6 w-full rounded-xl bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3 font-semibold text-white shadow-md transition-all hover:from-orange-600 hover:to-red-600 hover:shadow-lg disabled:opacity-50"
       >
-        {submitting ? "Signing up..." : "I'm In! 🔥"}
+        {submitting
+          ? isEditing ? "Updating..." : "Signing up..."
+          : isEditing ? "Update My Info" : "I'm In! 🔥"}
       </button>
     </form>
   );

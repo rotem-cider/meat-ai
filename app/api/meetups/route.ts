@@ -3,8 +3,8 @@ import { getDb, Meetup } from "@/lib/db";
 
 export async function GET() {
   const db = getDb();
-  const meetups = db.prepare("SELECT * FROM meetups ORDER BY created_at DESC").all() as Meetup[];
-  return NextResponse.json(meetups);
+  const result = await db.execute("SELECT * FROM meetups ORDER BY created_at DESC");
+  return NextResponse.json(result.rows as unknown as Meetup[]);
 }
 
 export async function POST(req: NextRequest) {
@@ -16,10 +16,15 @@ export async function POST(req: NextRequest) {
   }
 
   const db = getDb();
-  const result = db
-    .prepare("INSERT INTO meetups (title, proposed_date, location, description) VALUES (?, ?, ?, ?)")
-    .run(title, proposed_date, location || "", description || "");
+  const result = await db.execute({
+    sql: "INSERT INTO meetups (title, proposed_date, location, description) VALUES (?, ?, ?, ?)",
+    args: [title, proposed_date, location || "", description || ""],
+  });
 
-  const meetup = db.prepare("SELECT * FROM meetups WHERE id = ?").get(result.lastInsertRowid) as Meetup;
-  return NextResponse.json(meetup, { status: 201 });
+  const meetup = await db.execute({
+    sql: "SELECT * FROM meetups WHERE id = ?",
+    args: [result.lastInsertRowid!],
+  });
+
+  return NextResponse.json(meetup.rows[0] as unknown as Meetup, { status: 201 });
 }
