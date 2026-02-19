@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const meetup = result.rows[0] as unknown as Meetup | undefined;
 
     if (!meetup) {
-      return { title: "Meetup Not Found — Meat & AI" };
+      return { title: "Meetup Not Found — AI Meat-Up" };
     }
 
     const eventDate = new Date(meetup.proposed_date);
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       year: "numeric",
     });
 
-    const title = `${meetup.title} — Meat & AI`;
+    const title = `${meetup.title} — AI Meat-Up`;
     const description = meetup.description
       ? `${meetup.description} · ${formattedDate}`
       : `Join us on ${formattedDate}. RSVP, bring some meat, talk some AI.`;
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: "Meat & AI — Meetup" };
+    return { title: "AI Meat-Up" };
   }
 }
 

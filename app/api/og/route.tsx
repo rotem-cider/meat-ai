@@ -5,7 +5,7 @@ export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const title = searchParams.get("title") || "Meat & AI Meetup";
+  const title = searchParams.get("title") || "AI Meat-Up";
   const date = searchParams.get("date") || "";
   const attendees = searchParams.get("attendees") || "0";
 

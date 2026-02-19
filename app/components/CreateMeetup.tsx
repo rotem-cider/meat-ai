@@ -7,7 +7,7 @@ interface CreateMeetupProps {
 }
 
 export default function CreateMeetup({ onCreated }: CreateMeetupProps) {
-  const [title, setTitle] = useState("Meat & AI Meetup");
+  const [title, setTitle] = useState("AI Meat-Up");
   const [date, setDate] = useState(() => {
     const now = new Date();
     now.setDate(now.getDate() + 7);

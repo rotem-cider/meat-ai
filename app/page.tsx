@@ -45,7 +45,7 @@ export default function Home() {
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <div className="mb-10 text-center">
         <h1 className="text-4xl font-bold text-zinc-900 sm:text-5xl">
-          Meat & AI
+          AI Meat-Up
         </h1>
         <p className="mt-3 text-lg text-zinc-500">
           Where good code meets great cuts. Propose a meetup, bring some meat, talk some AI.
